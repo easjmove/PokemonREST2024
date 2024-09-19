@@ -1,0 +1,6 @@
+@PokemonREST2024_HostAddress = http://localhost:5071
+
+GET {{PokemonREST2024_HostAddress}}/api/pokemons/
+Accept: application/json
+
+###
