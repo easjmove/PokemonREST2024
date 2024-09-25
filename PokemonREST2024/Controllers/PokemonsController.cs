@@ -24,17 +24,36 @@ namespace PokemonREST2024.Controllers
         }
 
         // GET api/<PokemonsController>/5
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route("{id}")]
         public Pokemon? Get(int id)
         {
             return _pokemonsRepository.GetByID(id);
         }
 
         // POST api/<PokemonsController>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public Pokemon Post([FromBody] Pokemon newPokemon)
+        public ActionResult<Pokemon> Post([FromBody] Pokemon newPokemon)
         {
-            return _pokemonsRepository.Add(newPokemon);
+            try
+            {
+                Pokemon createdPokemon = _pokemonsRepository.Add(newPokemon);
+                return Created("/" + createdPokemon.Id, createdPokemon);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // PUT api/<PokemonsController>/5
