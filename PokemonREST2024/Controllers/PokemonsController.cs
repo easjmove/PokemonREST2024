@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using PokemonLib;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -18,17 +19,45 @@ namespace PokemonREST2024.Controllers
 
         // GET: api/<PokemonsController>
         [HttpGet]
-        public IEnumerable<Pokemon> Get()
+        public ActionResult<IEnumerable<Pokemon>> Get()
         {
             return _pokemonsRepository.GetAll();
         }
 
+        [HttpGet("test")]
+        public ActionResult<string> GetString([FromHeader] string? hej)
+        {
+            if (hej == null)
+            {
+                return Ok("Du har ikke udfyldt hej, men det er ok!");
+            }
+            if (int.TryParse(hej, out int parsedHej))
+            {
+                Response.Headers.Add("monster", "666");
+                return Ok("Du har sendt: " + parsedHej);
+            }
+            else
+            {
+               return BadRequest("Hej header skal være en int!");
+            }
+        }
+
         // GET api/<PokemonsController>/5
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet]
         [Route("{id}")]
-        public Pokemon? Get(int id)
+        public ActionResult<Pokemon> Get(int id)
         {
-            return _pokemonsRepository.GetByID(id);
+            Pokemon? foundPokemon = _pokemonsRepository.GetByID(id);
+            if (foundPokemon == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(foundPokemon);
+            }
         }
 
         // POST api/<PokemonsController>
@@ -56,11 +85,37 @@ namespace PokemonREST2024.Controllers
             }
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         // PUT api/<PokemonsController>/5
         [HttpPut("{id}")]
-        public Pokemon? Put(int id, [FromBody] Pokemon updatedPokemon)
+        public ActionResult<Pokemon?> Put(int id, [FromBody] Pokemon updatedPokemon)
         {
-            return _pokemonsRepository.Update(id, updatedPokemon);
+            try
+            {
+                Pokemon? pokemon = _pokemonsRepository.Update(id, updatedPokemon);
+                if (pokemon != null)
+                {
+                    return Ok(pokemon);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE api/<PokemonsController>/5
