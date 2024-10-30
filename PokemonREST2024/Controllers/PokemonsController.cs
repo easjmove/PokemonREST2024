@@ -19,9 +19,10 @@ namespace PokemonREST2024.Controllers
 
         // GET: api/<PokemonsController>
         [HttpGet]
-        public ActionResult<IEnumerable<Pokemon>> Get()
+        public ActionResult<IEnumerable<Pokemon>> Get([FromQuery] string? sortby, 
+            [FromQuery] string? name, [FromQuery] bool? asc)
         {
-            return _pokemonsRepository.GetAll();
+            return _pokemonsRepository.GetAll(sortby, name, asc);
         }
 
         [HttpGet("test")]
